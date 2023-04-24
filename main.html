@@ -24,32 +24,55 @@
         const context = screen.getContext('2d')
         const currentPlayer = 'player1'
 
-        window.addEventListener('keydown', makeMovement)
-        function makeMovement(event) {
-            const player = game.players[currentPlayer]
+        function creategame() {
+            const state = {
+                players: {
+                    'player1': { x: 2, y: 1 },
+                    'player2': { x: 9, y: 9 }
+                },
+                fruits: {
+                    'fruit1': { x: 4, y: 1 }
+                }
+            }
 
-            if (event.key == 'ArrowUp' && player.y - 1 >= 0) {
-                player.y -= 1
+            function movePlayer(command) {
+                const keyPressed = command.keyPressed
+                const player = state.players[command.playerId]
+
+                if (keyPressed == 'ArrowUp' && player.y - 1 >= 0) {
+                    player.y -= 1
+                }
+                if (keyPressed == 'ArrowLeft' && player.x - 1 >= 0) {
+                    player.x -= 1
+                }
+                if (keyPressed == 'ArrowDown' && player.y + 1 < screen.height) {
+                    player.y += 1
+                }
+                if (keyPressed == 'ArrowRight' && player.x + 1 < screen.width) {
+                    player.x += 1
+                }
+
+                console.log(`Moving ${command.playerId} with ${command.keyPressed}`)
             }
-            if (event.key == 'ArrowLeft' && player.x - 1 >= 0) {
-                player.x -= 1
-            }
-            if (event.key == 'ArrowDown' && player.y + 1 < screen.height) {
-                player.y += 1
-            }
-            if (event.key == 'ArrowRight' && player.x + 1 < screen.width) {
-                player.x += 1
+
+            return {
+                movePlayer, state
             }
         }
 
-        const game = {
-            players: {
-                'player1': { x: 2, y: 1 },
-                'player2': { x: 9, y: 9 }
-            },
-            fruits: {
-                'fruit1': { x: 4, y: 1 }
+        const game = creategame()
+
+        window.addEventListener('keydown', handleKeyDown)
+        function handleKeyDown(event) {
+            const keyPressed = event.key
+
+            const command = {
+                playerId: currentPlayer,
+                keyPressed
             }
+
+            game.movePlayer(command)
+
         }
 
         const clearScreen = () => { context.fillStyle = '#fff'; context.fillRect(0, 0, 10, 10) }
@@ -58,14 +81,14 @@
         function renderGame() {
             clearScreen()
 
-            for (playerId in game.players) {
-                const player = game.players[playerId]
+            for (playerId in game.state.players) {
+                const player = game.state.players[playerId]
                 context.fillStyle = 'black'
                 context.fillRect(player.x, player.y, 1, 1)
             }
 
-            for (fruitId in game.fruits) {
-                const fruit = game.fruits[fruitId]
+            for (fruitId in game.state.fruits) {
+                const fruit = game.state.fruits[fruitId]
                 context.fillStyle = 'green'
                 context.fillRect(fruit.x, fruit.y, 1, 1)
             }
