@@ -42,15 +42,15 @@
                 if (keyPressed == 'ArrowUp' && player.y - 1 >= 0) {
                     player.y -= 1
                 }
-                if (keyPressed == 'ArrowLeft' && player.x - 1 >= 0) {
+                else if (keyPressed == 'ArrowLeft' && player.x - 1 >= 0) {
                     player.x -= 1
                 }
-                if (keyPressed == 'ArrowDown' && player.y + 1 < screen.height) {
+                else if (keyPressed == 'ArrowDown' && player.y + 1 < screen.height) {
                     player.y += 1
                 }
-                if (keyPressed == 'ArrowRight' && player.x + 1 < screen.width) {
+                else if (keyPressed == 'ArrowRight' && player.x + 1 < screen.width) {
                     player.x += 1
-                }
+                } else return
 
                 console.log(`Moving ${command.playerId} with ${command.keyPressed}`)
             }
@@ -61,18 +61,41 @@
         }
 
         const game = creategame()
+        const keyboardListener = createKeyboardListener()
+        keyboardListener.subscribe(game.movePlayer)
 
-        window.addEventListener('keydown', handleKeyDown)
-        function handleKeyDown(event) {
-            const keyPressed = event.key
+        function createKeyboardListener() {
+            window.addEventListener('keydown', handleKeyDown)
 
-            const command = {
-                playerId: currentPlayer,
-                keyPressed
+            const state = {
+                observers: []
             }
 
-            game.movePlayer(command)
+            function subscribe(observerFunction) {
+                state.observers.push(observerFunction)
+            }
 
+            function notifyAll(command) {
+                console.log(`Notifying ${state.observers.length} observers`)
+
+                for (const observerFunction of state.observers) {
+                    observerFunction(command)
+                }
+            }
+
+            function handleKeyDown(event) {
+                const keyPressed = event.key
+
+                const command = {
+                    playerId: currentPlayer,
+                    keyPressed
+                }
+
+                notifyAll(command)
+
+            }
+
+            return { subscribe }
         }
 
         const clearScreen = () => { context.fillStyle = '#fff'; context.fillRect(0, 0, 10, 10) }
