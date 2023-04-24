@@ -37,6 +37,7 @@
 
         socket.on('setup', (state) => {
             game.setState(state)
+            console.log(state)
         })
 
         const screen = document.getElementById('screen')

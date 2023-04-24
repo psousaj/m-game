@@ -9,16 +9,13 @@ const sockets = socketio(server);
 app.use(express.static("public"));
 
 const game = createGame();
-game.addPlayer({ playerId: "player1", playerX: 2, playerY: 1 });
-game.addFruit({ fruitId: "fruit1", fruitX: 3, fruitY: 5 });
-game.addFruit({ fruitId: "fruit2", fruitX: 3, fruitY: 3 });
-game.addFruit({ fruitId: "fruit3", fruitX: 6, fruitY: 7 });
 console.log(game.state);
 
 sockets.on("connection", (socket) => {
   const playerId = socket.id;
+  console.log(`Player connected on Server with id: ${playerId}`);
 
-  console.log(`Player connected on Server with: ${playerId}`);
+  game.addPlayer({ playerId: playerId });
 
   socket.emit("setup", game.state);
 });
