@@ -8,6 +8,22 @@ export default function createGame() {
     },
   };
 
+  const observers = [];
+
+  function start(frequency = 2000) {
+    setInterval(addFruit, frequency);
+  }
+
+  function subscribe(observerFunction) {
+    observers.push(observerFunction);
+  }
+
+  function notifyAll(command) {
+    for (const observerFunction of observers) {
+      observerFunction(command);
+    }
+  }
+
   function setState(NewState) {
     Object.assign(state, NewState);
   }
@@ -27,30 +43,61 @@ export default function createGame() {
       x: playerX,
       y: playerY,
     };
+    notifyAll({
+      type: "add-player",
+      playerId: playerId,
+      playerX: playerX,
+      playerY: playerY,
+    });
   }
 
   function removePlayer(command) {
     const playerId = command.playerId;
     delete state.players[playerId];
+
+    notifyAll({
+      type: "remove-player",
+      playerId: playerId,
+    });
   }
 
   function addFruit(command) {
-    const fruitId = command.fruitId;
-    const fruitX = command.fruitX;
-    const fruitY = command.fruitY;
+    const fruitId = command
+      ? command.fruitId
+      : Math.floor(Math.random() * 10000000);
+    const fruitX = command
+      ? command.fruitX
+      : Math.floor(Math.random() * state.screen.width);
+    const fruitY = command
+      ? command.fruitY
+      : Math.floor(Math.random() * state.screen.width);
 
     state.fruits[fruitId] = {
       x: fruitX,
       y: fruitY,
     };
+
+    notifyAll({
+      type: "add-fruit",
+      fruitId: fruitId,
+      fruitX: fruitX,
+      fruitY: fruitY,
+    });
   }
 
   function removeFruit(command) {
     const fruitId = command.fruitId;
     delete state.fruits[fruitId];
+
+    notifyAll({
+      type: "remove-fruit",
+      playerId: fruitId,
+    });
   }
 
   function movePlayer(command) {
+    notifyAll(command);
+
     const acceptedMoves = {
       ArrowUp(player) {
         player.y = Math.max(player.y - 1, 0);
@@ -92,7 +139,6 @@ export default function createGame() {
         }
       }
     }
-    // console.log(`Moving ${command.playerId} with ${command.keyPressed}`)
   }
 
   return {
@@ -103,5 +149,7 @@ export default function createGame() {
     movePlayer,
     state,
     setState,
+    subscribe,
+    start,
   };
 }
